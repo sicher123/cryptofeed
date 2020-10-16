@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from cryptofeed.callback import Callback
 from cryptofeed.defines import (ASK, BID, BOOK_DELTA, FUNDING, L2_BOOK, L3_BOOK,
-                                LIQUIDATIONS, OPEN_INTEREST, TICKER, TRADES, VOLUME)
+                                LIQUIDATIONS, OPEN_INTEREST, TICKER, TRADES, VOLUME, KLINE)
 from cryptofeed.exceptions import BidAskOverlapping
 from cryptofeed.standards import feed_to_exchange, load_exchange_pair_mapping, pair_std_to_exchange
 from cryptofeed.util.book import book_delta, depth
@@ -58,7 +58,8 @@ class Feed:
                           VOLUME: Callback(None),
                           FUNDING: Callback(None),
                           OPEN_INTEREST: Callback(None),
-                          LIQUIDATIONS: Callback(None)}
+                          LIQUIDATIONS: Callback(None),
+                          KLINE: Callback(None)}
 
         if callbacks:
             for cb_type, cb_func in callbacks.items():
@@ -144,7 +145,12 @@ class Feed:
     async def message_handler(self, msg: str, timestamp: float):
         raise NotImplementedError
 
+from cryptofeed.pairs import gen_anti_pairs
 
 class RestFeed(Feed):
+    def __init__(self, address, pairs=None, channels=None, config=None, callbacks=None, **kwargs):
+        super().__init__(address, pairs=pairs, channels=channels, config=config, callbacks=callbacks, **kwargs)
+        self.anti_pairs = gen_anti_pairs(self.id)
+
     async def message_handler(self):
         raise NotImplementedError

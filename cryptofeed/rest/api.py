@@ -88,6 +88,9 @@ class API:
             resp.raise_for_status()
 
     # public / non account specific
+    def kline(self, symbol: str, size: int, retry=None, retry_wait=10):
+        raise NotImplementedError
+
     def ticker(self, symbol: str, retry=None, retry_wait=10):
         raise NotImplementedError
 

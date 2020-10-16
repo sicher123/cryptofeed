@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.0.0
+  * 基于原版的起始改动版本，添加了huobi和okex的kline数据支持
+
 ### 1.6.0
   * Feature: Validate FTX book checksums (optionally enabled)
   * Bugfix: Subscribing only to open interest on binance futures gave connection errors

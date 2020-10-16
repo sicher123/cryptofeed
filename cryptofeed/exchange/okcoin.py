@@ -10,14 +10,14 @@ from decimal import Decimal
 
 from sortedcontainers import SortedDict as sd
 from yapic import json
-
-from cryptofeed.defines import ASK, BID, BUY, FUNDING, L2_BOOK, OKCOIN, OPEN_INTEREST, SELL, TICKER, TRADES
+import json
+from cryptofeed.defines import ASK, BID, BUY, FUNDING, L2_BOOK, OKCOIN, OPEN_INTEREST, SELL, TICKER, TRADES, KLINE
 from cryptofeed.feed import Feed
 from cryptofeed.standards import pair_exchange_to_std, timestamp_normalize
-
+from datetime import datetime, timedelta
 
 LOG = logging.getLogger('feedhandler')
-
+kline_fields = ["open", "high", "low", "close", "vol", "amount", "datetime"]
 
 class OKCoin(Feed):
     id = OKCOIN
@@ -26,10 +26,12 @@ class OKCoin(Feed):
         super().__init__('wss://real.okcoin.com:8443/ws/v3', pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
         self.book_depth = 200
         self.open_interest = {}
+        self.kline_cache = [[]]
 
     def __reset(self):
         self.l2_book = {}
         self.open_interest = {}
+        self.kline_cache = [[]]
 
     async def subscribe(self, websocket):
         self.__reset()
@@ -140,6 +142,48 @@ class OKCoin(Feed):
                             self.l2_book[pair][s][price] = amount
                 await self.book_callback(self.l2_book[pair], L2_BOOK, pair, False, delta, timestamp_normalize(self.id, update['timestamp']), timestamp)
 
+    async def _kline(self, msg: dict, timestamp: float):
+        update = msg["data"][0]
+        kline = update["candle"]
+        dt = datetime.strptime(kline.pop(0), "%Y-%m-%dT%H:%M:%S.000Z") + timedelta(hours=8)
+        kline.append(dt)
+        
+        last = self.kline_cache[-1]
+        if len(last) > 0:
+            last_dt = last[-1]
+            if last_dt + timedelta(minutes=1) == dt:
+                pair = update['instrument_id']
+                # update_timestamp = timestamp_normalize(self.id, update['timestamp'])
+                update_timestamp = timestamp_normalize(self.id, dt.timestamp())
+                
+                # 改成dict , 用于输出统一格式
+                kline_dict = {kline_fields[i]: kline[i] for i in range(len(kline_fields))}
+                # kline_dict["amount"] = 0.0
+                
+                await self.callback(KLINE,
+                                    feed=self.id,
+                                    pair=pair,
+                                    kline=kline_dict,
+                                    timestamp=update_timestamp
+                                    )
+                self.__reset()
+
+        self.kline_cache.append(kline)
+        
+        # await self.callback(KLINE,
+        #                     feed=self.id,
+        #                     pair=pair,
+        #                     # start=kline['start'],
+        #                     # end=kline['end'],
+        #                     open=Decimal(kline[1]),
+        #                     close=Decimal(kline[2]),
+        #                     high=Decimal(kline[3]),
+        #                     low=Decimal(kline[4]),
+        #                     volume=Decimal(kline[5]),
+        #                     turnover=Decimal(kline[6]),
+        #                     timestamp=update_timestamp
+        #                     )
+
     async def message_handler(self, msg: str, timestamp: float):
         # DEFLATE compression, no header
         msg = zlib.decompress(msg, -15)
@@ -161,6 +205,8 @@ class OKCoin(Feed):
                 await self._book(msg, timestamp)
             elif 'swap/funding_rate' in msg['table']:
                 await self._funding(msg, timestamp)
+            elif 'candle' in msg['table']:
+                await self._kline(msg, timestamp)
             else:
                 LOG.warning("%s: Unhandled message %s", self.id, msg)
         else:

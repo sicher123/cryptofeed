@@ -24,7 +24,6 @@ remains only to serve as an example of how a REST only exchange might be support
 **** DEPRECATED ****
 """
 
-
 class Coinbene(RestFeed):
     id = COINBENE
 

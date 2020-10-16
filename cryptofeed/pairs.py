@@ -14,7 +14,8 @@ import requests
 
 from cryptofeed.defines import (BINANCE, BINANCE_FUTURES, BINANCE_JERSEY, BINANCE_US, BITCOINCOM, BITFINEX, BITMAX,
                                 BITSTAMP, BITTREX, BLOCKCHAIN, BYBIT, COINBASE, COINBENE, EXX, FTX, FTX_US, GEMINI,
-                                HITBTC, HUOBI, HUOBI_DM, HUOBI_SWAP, KRAKEN, OKCOIN, OKEX, POLONIEX, UPBIT, GATEIO)
+                                HITBTC, HUOBI, HUOBI_DM, HUOBI_SWAP, KRAKEN, OKCOIN, OKEX, POLONIEX, UPBIT, GATEIO,
+                                HUOBI_R, HUOBI_DM_R, HUOBI_SWAP_R)
 
 
 LOG = logging.getLogger('feedhandler')
@@ -23,7 +24,7 @@ PAIR_SEP = '-'
 
 
 _pairs_retrieval_cache = dict()
-
+_anti_pairs_retrieval_cache = dict()
 
 def set_pair_separator(symbol: str):
     global PAIR_SEP
@@ -38,6 +39,14 @@ def gen_pairs(exchange):
         _pairs_retrieval_cache[exchange] = pairs
     return _pairs_retrieval_cache[exchange]
 
+def gen_anti_pairs(exchange):
+    if exchange not in _anti_pairs_retrieval_cache:
+        LOG.info("%s: Getting list of pairs", exchange)
+        pairs = _exchange_function_map[exchange]()
+        anti_pairs=dict(zip(pairs.values(),pairs.keys())) 
+        LOG.info("%s: %s pairs", exchange, len(anti_pairs))
+        _anti_pairs_retrieval_cache[exchange] = anti_pairs
+    return _anti_pairs_retrieval_cache[exchange]
 
 def _binance_pairs(endpoint: str):
     ret = {}
@@ -301,6 +310,9 @@ _exchange_function_map = {
     HUOBI: huobi_pairs,
     HUOBI_DM: huobi_dm_pairs,
     HUOBI_SWAP: huobi_swap_pairs,
+    HUOBI_R : huobi_pairs,
+    HUOBI_DM_R : huobi_dm_pairs,
+    HUOBI_SWAP_R: huobi_swap_pairs,
     OKCOIN: okcoin_pairs,
     OKEX: okex_pairs,
     COINBENE: coinbene_pairs,

@@ -34,3 +34,6 @@ from cryptofeed.exchange.okcoin import OKCoin
 from cryptofeed.exchange.okex import OKEx
 from cryptofeed.exchange.poloniex import Poloniex
 from cryptofeed.exchange.upbit import Upbit
+from cryptofeed.exchange.huobi_r import HuobiR
+from cryptofeed.exchange.huobi_dm_r import HuobiDMR
+from cryptofeed.exchange.huobi_swap_r import HuobiSwapR

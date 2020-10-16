@@ -9,16 +9,19 @@ Contains all code to normalize and standardize the differences
 between exchanges. These include trading pairs, timestamps, and
 data channel names
 '''
+# %%
 import logging
 
 import pandas as pd
 
 from cryptofeed.defines import (BINANCE, BINANCE_FUTURES, BINANCE_JERSEY, BINANCE_US, BITCOINCOM, BITFINEX, BITMAX, BITMEX,
                                 BITSTAMP, BITTREX, BLOCKCHAIN, BYBIT, COINBASE, COINBENE, DERIBIT, EXX, FILL_OR_KILL, FTX,
-                                FTX_US, FUNDING, GATEIO, GEMINI, HITBTC, HUOBI, HUOBI_DM, HUOBI_SWAP, IMMEDIATE_OR_CANCEL, KRAKEN,
+                                FTX_US, FUNDING, GATEIO, GEMINI, HITBTC, HUOBI, HUOBI_DM, HUOBI_SWAP, 
+                                HUOBI_R, HUOBI_DM_R, HUOBI_SWAP_R,
+                                IMMEDIATE_OR_CANCEL, KRAKEN,
                                 KRAKEN_FUTURES, L2_BOOK, L3_BOOK, LIMIT, LIQUIDATIONS,
                                 MAKER_OR_CANCEL, MARKET, OKCOIN, OKEX, OPEN_INTEREST, POLONIEX, TICKER,
-                                TRADES, UNSUPPORTED, UPBIT, VOLUME)
+                                TRADES, UNSUPPORTED, UPBIT, VOLUME, KLINE)
 from cryptofeed.exceptions import UnsupportedDataFeed, UnsupportedTradingOption, UnsupportedTradingPair
 from cryptofeed.pairs import gen_pairs
 
@@ -70,7 +73,7 @@ def pair_exchange_to_std(pair):
 def timestamp_normalize(exchange, ts):
     if exchange in {BITMEX, COINBASE, HITBTC, OKCOIN, OKEX, BYBIT, FTX, FTX_US, BITCOINCOM, BLOCKCHAIN}:
         return pd.Timestamp(ts).timestamp()
-    elif exchange in {HUOBI, HUOBI_DM, HUOBI_SWAP, BITFINEX, COINBENE, DERIBIT, BINANCE, BINANCE_US, BINANCE_JERSEY, BINANCE_FUTURES, GEMINI, BITTREX, BITMAX, KRAKEN_FUTURES, UPBIT}:
+    elif exchange in {HUOBI, HUOBI_DM, HUOBI_SWAP, HUOBI_R, HUOBI_DM_R, HUOBI_SWAP_R ,BITFINEX, COINBENE, DERIBIT, BINANCE, BINANCE_US, BINANCE_JERSEY, BINANCE_FUTURES, GEMINI, BITTREX, BITMAX, KRAKEN_FUTURES, UPBIT}:
         return ts / 1000.0
     elif exchange in {BITSTAMP}:
         return ts / 1000000.0
@@ -224,6 +227,16 @@ _feed_to_exchange_map = {
         BINANCE_FUTURES: 'forceOrder',
         FTX: 'trades',
         DERIBIT: 'trades'
+    },
+        KLINE: {        
+        HUOBI: 'kline',
+        HUOBI_DM: 'kline',
+        HUOBI_SWAP: 'kline',
+        HUOBI_R : 'kline',
+        HUOBI_DM_R : 'kline',
+        HUOBI_SWAP_R : 'kline',
+        OKCOIN: '{}/candle60s',
+        OKEX: '{}/candle60s'
     }
 }
 
@@ -295,3 +308,5 @@ def feed_to_exchange(exchange, feed):
     if ret == UNSUPPORTED:
         raise_error()
     return ret
+
+# %%

@@ -28,9 +28,9 @@ def main():
     pairs1 = ["BTC_CQ","EOS_CQ"]
     pairs2 = ["BTC-USD" , "EOS-USD"] 
     pairs3 = OKEx.get_active_symbols()[:5]
-    fh.add_feed(HuobiR(pairs=pairs0, channels=[KLINE], callbacks={KLINE: kline}))
-    fh.add_feed(HuobiDMR(pairs=pairs1, channels=[KLINE], callbacks={KLINE: kline}))
-    fh.add_feed(HuobiSwapR(pairs=pairs2, channels=[KLINE], callbacks={KLINE: kline}))
+    # fh.add_feed(HuobiR(pairs=pairs0, channels=[KLINE], callbacks={KLINE: kline}))
+    # fh.add_feed(HuobiDMR(pairs=pairs1, channels=[KLINE], callbacks={KLINE: kline}))
+    # fh.add_feed(HuobiSwapR(pairs=pairs2, channels=[KLINE], callbacks={KLINE: kline}))
     fh.add_feed(OKEx(pairs=pairs3, channels=[KLINE], callbacks={KLINE: kline}))
     fh.run()
 

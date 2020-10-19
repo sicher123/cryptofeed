@@ -157,7 +157,7 @@ class OKCoin(Feed):
                 update_timestamp = timestamp_normalize(self.id, dt.timestamp())
                 
                 # 改成dict , 用于输出统一格式
-                kline_dict = {kline_fields[i]: kline[i] for i in range(len(kline_fields))}
+                kline_dict = {kline_fields[i]: last[i] for i in range(len(kline_fields))}
                 # kline_dict["amount"] = 0.0
                 
                 await self.callback(KLINE,
@@ -169,6 +169,7 @@ class OKCoin(Feed):
                 self.__reset()
 
         self.kline_cache.append(kline)
+        self.kline_cache.pop(0)
         
         # await self.callback(KLINE,
         #                     feed=self.id,

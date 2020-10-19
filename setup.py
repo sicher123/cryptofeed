@@ -55,6 +55,7 @@ setup(
         "requests>=2.18.4",
         "websockets>=7.0",
         "sortedcontainers>=1.5.9",
+        "yapic.json>=1.4.3",
         "pandas",
         "aiohttp==3.6.2",
         "aiofile>=2.0.0",

@@ -26,12 +26,11 @@ class OKCoin(Feed):
         super().__init__('wss://real.okcoin.com:8443/ws/v3', pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
         self.book_depth = 200
         self.open_interest = {}
-        self.kline_cache = [[]]
+        self.kline_cache = {pair:[[]] for pair in pairs}
 
     def __reset(self):
         self.l2_book = {}
         self.open_interest = {}
-        self.kline_cache = [[]]
 
     async def subscribe(self, websocket):
         self.__reset()
@@ -145,14 +144,14 @@ class OKCoin(Feed):
     async def _kline(self, msg: dict, timestamp: float):
         update = msg["data"][0]
         kline = update["candle"]
+        pair = update['instrument_id']
         dt = datetime.strptime(kline.pop(0), "%Y-%m-%dT%H:%M:%S.000Z") + timedelta(hours=8)
         kline.append(dt)
         
-        last = self.kline_cache[-1]
+        last = self.kline_cache[pair][-1]
         if len(last) > 0:
             last_dt = last[-1]
             if last_dt + timedelta(minutes=1) == dt:
-                pair = update['instrument_id']
                 # update_timestamp = timestamp_normalize(self.id, update['timestamp'])
                 update_timestamp = timestamp_normalize(self.id, dt.timestamp())
                 
@@ -166,10 +165,9 @@ class OKCoin(Feed):
                                     kline=kline_dict,
                                     timestamp=update_timestamp
                                     )
-                self.__reset()
 
-        self.kline_cache.append(kline)
-        self.kline_cache.pop(0)
+        self.kline_cache[pair].append(kline)
+        self.kline_cache[pair].pop(0)
         
         # await self.callback(KLINE,
         #                     feed=self.id,

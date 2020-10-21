@@ -61,6 +61,7 @@ class HuobiSwapR(RestFeed):
 
     def __init__(self, pairs=None, channels=None, callbacks=None, config=None, **kwargs):
         super().__init__('https://api.hbdm.com/swap-ex/market/history/kline', pairs=pairs, channels=channels, config=config, callbacks=callbacks, **kwargs)
+        self.delay = None
 
     def __reset(self):
         self.last_trade_update = {}
@@ -104,8 +105,13 @@ class HuobiSwapR(RestFeed):
         return
 
     async def message_handler(self):
-        delay = get_delay()
-        signal = get_signal(delay)
+        if not self.delay:
+            self.delay = get_delay()
+
+        signal = get_signal(self.delay)
+        
+        if signal:
+            self.delay = None
 
         async def handle(session, pair, chan):
             if chan == KLINE:

@@ -8,7 +8,7 @@ import logging
 
 
 FORMAT = logging.Formatter('%(asctime)-15s : %(levelname)s : %(message)s')
-
+PATH = "/log"
 
 def get_logger(name, filename, level=logging.WARNING):
     logger = logging.getLogger(name)
@@ -18,7 +18,7 @@ def get_logger(name, filename, level=logging.WARNING):
     stream.setFormatter(FORMAT)
     logger.addHandler(stream)
 
-    fh = logging.FileHandler(filename)
+    fh = logging.FileHandler(PATH + "/" + filename)
     fh.setFormatter(FORMAT)
     logger.addHandler(fh)
     logger.propagate = False

@@ -98,10 +98,13 @@ class HuobiSwapR(RestFeed):
                     #         amount=Decimal(data["amount"]),
                     #         timestamp=timestamp_normalize(self.id, data['id'])
                     #         )
+                else:
+                    raise ValueError(f"error {self.id} message : {res}")
             await asyncio.sleep(40)
 
     async def subscribe(self):
         self.__reset()
+        self.delay = None
         return
 
     async def message_handler(self):

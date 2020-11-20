@@ -23,7 +23,7 @@ class OKCoin(Feed):
     id = OKCOIN
 
     def __init__(self, pairs=None, channels=None, callbacks=None, **kwargs):
-        super().__init__('wss://real.okcoin.com:8443/ws/v3', pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
+        super().__init__('wss://real.okcoin.com:9443/ws/v3', pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
         self.book_depth = 200
         self.open_interest = {}
         self.kline_cache = {pair:[[]] for pair in pairs}

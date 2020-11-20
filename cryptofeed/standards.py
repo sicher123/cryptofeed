@@ -47,7 +47,7 @@ def load_exchange_pair_mapping(exchange):
 
 def pair_std_to_exchange(pair, exchange):
     # bitmex does its own validation of trading pairs dynamically
-    if exchange in {BITMEX, DERIBIT, KRAKEN_FUTURES}:
+    if exchange in {BITMEX, DERIBIT, KRAKEN_FUTURES, BINANCE， BINANCE_FUTURES}:
         return pair
     if pair in _std_trading_pairs:
         try:
@@ -236,7 +236,9 @@ _feed_to_exchange_map = {
         HUOBI_DM_R : 'kline',
         HUOBI_SWAP_R : 'kline',
         OKCOIN: '{}/candle60s',
-        OKEX: '{}/candle60s'
+        OKEX: '{}/candle60s',
+        BINANCE: 'kline',
+        BINANCE_FUTURES: 'kline',
     }
 }
 

@@ -7,7 +7,7 @@ associated with this software.
 import asyncio
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from time import time
 
@@ -15,13 +15,13 @@ import aiohttp
 from sortedcontainers import SortedDict as sd
 from yapic import json
 
-from cryptofeed.defines import BID, ASK, BINANCE, BUY, FUNDING, L2_BOOK, LIQUIDATIONS, OPEN_INTEREST, SELL, TICKER, TRADES
+from cryptofeed.defines import BID, ASK, BINANCE, BUY, FUNDING, L2_BOOK, LIQUIDATIONS, OPEN_INTEREST, SELL, TICKER, TRADES, KLINE
 from cryptofeed.feed import Feed
 from cryptofeed.standards import pair_exchange_to_std, timestamp_normalize
 
 
 LOG = logging.getLogger('feedhandler')
-
+kline_fields = ["open", "high", "low", "close", "vol", "amount", "datetime"]
 
 class Binance(Feed):
     id = BINANCE
@@ -31,15 +31,25 @@ class Binance(Feed):
         self.book_depth = depth
         self.ws_endpoint = 'wss://stream.binance.com:9443'
         self.rest_endpoint = 'https://www.binance.com/api/v1'
+
+        period = kwargs.get("period")
+        if not period:
+            period = "1m"        
+        self.period = period
+
         self.address = self._address()
+        print(self.address)
         self._reset()
 
     def _address(self):
         address = self.ws_endpoint + '/stream?streams='
         for chan in self.channels if not self.config else self.config:
             for pair in self.pairs if not self.config else self.config[chan]:
-                pair = pair.lower()
-                stream = f"{pair}@{chan}/"
+                if chan == KLINE:
+                    stream = f"{pair}@{chan}_{self.period}/" 
+                else:
+                    pair = pair.lower()
+                    stream = f"{pair}@{chan}/"
                 address += stream
         return address[:-1]
 
@@ -306,8 +316,35 @@ class Binance(Feed):
             await self._liquidations(msg, timestamp)
         elif msg['e'] == 'markPriceUpdate':
             await self._funding(msg, timestamp)
+        elif msg['e'] == 'kline':
+            await self._kline(msg, timestamp)
         else:
             LOG.warning("%s: Unexpected message received: %s", self.id, msg)
+
+    async def _kline(self, msg: dict, timestamp: float):
+        print(msg)
+        pair = msg.get("s")
+        kline = msg.get("k")
+        
+        is_finish = kline.get("x")
+        if is_finish:
+            update_timestamp = timestamp_normalize(self.id, kline.get("t"))
+                
+            kline_dict  =  {"open": kline.get("o"),
+                            "high": kline.get("h"),
+                            "low": kline.get("l"),
+                            "close": kline.get("c"),
+                            "vol": kline.get("v"),
+                            "amount": kline.get("q"),
+                            "datetime": datetime.fromtimestamp(update_timestamp)}
+        
+            await self.callback(KLINE,
+                                feed=self.id,
+                                pair=pair,
+                                kline=kline_dict,
+                                timestamp=update_timestamp
+                                )
+        
 
     async def subscribe(self, websocket):
         # Binance does not have a separate subscribe message, the

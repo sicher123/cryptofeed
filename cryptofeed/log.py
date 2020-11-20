@@ -4,11 +4,15 @@ Copyright (C) 2017-2020  Bryant Moscon - bmoscon@gmail.com
 Please see the LICENSE file for the terms and conditions
 associated with this software.
 '''
+import os
 import logging
 
 
 FORMAT = logging.Formatter('%(asctime)-15s : %(levelname)s : %(message)s')
-PATH = "/log"
+if os.name == "nt":
+    PATH = os.path.abspath(r"C:/Desktop")
+elif os.name == "posix":
+    PATH = "/log"
 
 def get_logger(name, filename, level=logging.WARNING):
     logger = logging.getLogger(name)

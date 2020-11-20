@@ -9,22 +9,19 @@ import logging
 
 from yapic import json
 
-from cryptofeed.defines import BINANCE_FUTURES, OPEN_INTEREST, TICKER, KLINE
+from cryptofeed.defines import BINANCE_COIN_FUTURES, OPEN_INTEREST, TICKER, KLINE
 from cryptofeed.exchange.binance import Binance
-from cryptofeed.standards import pair_exchange_to_std, timestamp_normalize
-from cryptofeed.pairs import gen_anti_pairs
-from datetime import datetime
 
 LOG = logging.getLogger('feedhandler')
 
 
-class BinanceFutures(Binance):
-    id = BINANCE_FUTURES
+class BinanceCoinFutures(Binance):
+    id = BINANCE_COIN_FUTURES
 
     def __init__(self, pairs=None, channels=None, callbacks=None, depth=1000, **kwargs):
         super().__init__(pairs=pairs, channels=channels, callbacks=callbacks, depth=depth, **kwargs)
-        self.ws_endpoint = 'wss://fstream.binance.com'
-        self.rest_endpoint = 'https://fapi.binance.com/fapi/v1'
+        self.ws_endpoint = 'wss://dstream.binance.com'
+        self.rest_endpoint = 'https://dapi.binance.com/fapi/v1'
         period = kwargs.get("period")
         if not period:
             period = "1m"        
@@ -41,7 +38,7 @@ class BinanceFutures(Binance):
                 if chan == TICKER:
                     stream = f"{pair}@bookTicker/"
                 elif chan == KLINE:
-                    stream = f"{pair}@{chan}_{self.period}/" 
+                    stream = f"{pair}@{KLINE}_{self.period}" 
                 else:
                     stream = f"{pair}@{chan}/"
                 address += stream
@@ -65,29 +62,6 @@ class BinanceFutures(Binance):
             LOG.warning("%s: Missing book update detected, resetting book", self.id)
             skip_update = True
         return skip_update, forced
-
-    async def _kline(self, msg: dict, timestamp: float):
-        pair = msg.get("s")
-        kline = msg.get("k")
-        
-        is_finish = kline.get("x")
-        if is_finish:
-            update_timestamp = timestamp_normalize(self.id, kline.get("t"))
-                
-            kline_dict  =  {"open": kline.get("o"),
-                            "high": kline.get("h"),
-                            "low": kline.get("l"),
-                            "close": kline.get("c"),
-                            "vol": kline.get("v"),
-                            "amount": kline.get("q"),
-                            "datetime": datetime.fromtimestamp(update_timestamp)}
-        
-            await self.callback(KLINE,
-                                feed=self.id,
-                                pair=pair,
-                                kline=kline_dict,
-                                timestamp=update_timestamp
-                                )
 
     async def message_handler(self, msg: str, timestamp: float):
         msg = json.loads(msg, parse_float=Decimal)
@@ -113,7 +87,5 @@ class BinanceFutures(Binance):
             await self._liquidations(msg, timestamp)
         elif msg_type == 'markPriceUpdate':
             await self._funding(msg, timestamp)
-        elif msg_type == 'kline':
-            await self._kline(msg, timestamp)
         else:
             LOG.warning("%s: Unexpected message received: %s", self.id, msg)

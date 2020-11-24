@@ -77,7 +77,7 @@ class HuobiDMR(RestFeed):
 
     async def _kline(self, signal, session, pair):
         if signal:
-            pair = self.pairs.get(pair)
+            pair = self.anti_pairs.get(pair)
             url = f"{self.address}?period=1min&size=2&symbol={pair}"
             
             async with session.get(url) as response:
@@ -88,10 +88,10 @@ class HuobiDMR(RestFeed):
                     data = res["data"][0]
                     data["datetime"] = datetime.fromtimestamp(data["id"])
 
-                    ori_pair = self.anti_pairs.get(pair)
+                    # ori_pair = self.anti_pairs.get(pair)
                     await self.callback(KLINE,
                             feed=self.id,
-                            pair=ori_pair,
+                            pair=pair,
                             kline=data,
                             timestamp=timestamp_normalize(self.id, data['id']))
                     

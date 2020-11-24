@@ -34,9 +34,9 @@ def main():
     pair6 = list(binance_futures_pairs().keys())[:5]
     #print(pair6)
     # fh.add_feed(HuobiR(pairs=pairs0, channels=[KLINE], callbacks={KLINE: kline}))
-    # fh.add_feed(HuobiDMR(pairs=pairs1, channels=[KLINE], callbacks={KLINE: kline}))
+    fh.add_feed(HuobiDMR(pairs=pairs1, channels=[KLINE], callbacks={KLINE: kline}))
     # fh.add_feed(HuobiSwapR(pairs=pairs2, channels=[KLINE], callbacks={KLINE: kline}))
-    fh.add_feed(BinanceFutures(pairs=["BTCUSDT"], channels=[KLINE], callbacks={KLINE: kline}))
+    # fh.add_feed(BinanceFutures(pairs=["BTCUSDT"], channels=[KLINE], callbacks={KLINE: kline}))
     #fh.add_feed(BinanceFutures(pairs=pair6, channels=[KLINE], callbacks={KLINE: kline}))
     fh.run()
 

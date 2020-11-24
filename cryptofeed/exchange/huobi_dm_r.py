@@ -11,7 +11,7 @@ import asyncio
 import requests
 # from decimal import Decimal
 from datetime import datetime 
-from cryptofeed.pairs import gen_anti_pairs
+
 from cryptofeed.feed import RestFeed
 from cryptofeed.defines import KLINE , HUOBI_DM_R
 from cryptofeed.standards import pair_exchange_to_std, timestamp_normalize
@@ -70,7 +70,6 @@ class HuobiDMR(RestFeed):
     def __init__(self, pairs=None, channels=None, callbacks=None, config=None, **kwargs):
         super().__init__('https://api.hbdm.com/market/history/kline', pairs=pairs, channels=channels, config=config, callbacks=callbacks, **kwargs)
         self.delay = None
-        self.pairs = gen_anti_pairs(self.id)
 
     def __reset(self):
         self.last_trade_update = {}
@@ -88,7 +87,6 @@ class HuobiDMR(RestFeed):
                     data = res["data"][0]
                     data["datetime"] = datetime.fromtimestamp(data["id"])
 
-                    # ori_pair = self.anti_pairs.get(pair)
                     await self.callback(KLINE,
                             feed=self.id,
                             pair=pair,

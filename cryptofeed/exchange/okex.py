@@ -21,6 +21,7 @@ class OKEx(OKCoin):
         super().__init__(pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
         self.address = 'wss://real.okex.com:8443/ws/v3'
         self.book_depth = 200
+        self.kline_fields = ["open", "high", "low", "close", "vol", "amount", "datetime"]
 
     @staticmethod
     def get_active_symbols_info():

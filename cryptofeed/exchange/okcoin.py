@@ -17,16 +17,16 @@ from cryptofeed.standards import pair_exchange_to_std, timestamp_normalize
 from datetime import datetime, timedelta
 
 LOG = logging.getLogger('feedhandler')
-kline_fields = ["open", "high", "low", "close", "vol", "amount", "datetime"]
 
 class OKCoin(Feed):
     id = OKCOIN
 
     def __init__(self, pairs=None, channels=None, callbacks=None, **kwargs):
-        super().__init__('wss://real.okcoin.com:9443/ws/v3', pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
+        super().__init__('wss://real.okcoin.com:8443/ws/v3', pairs=pairs, channels=channels, callbacks=callbacks, **kwargs)
         self.book_depth = 200
         self.open_interest = {}
         self.kline_cache = {pair:[[]] for pair in pairs}
+        self.kline_fields = ["open", "high", "low", "close", "vol", "datetime"]
 
     def __reset(self):
         self.l2_book = {}
@@ -156,8 +156,9 @@ class OKCoin(Feed):
                 update_timestamp = timestamp_normalize(self.id, dt.timestamp())
                 
                 # 改成dict , 用于输出统一格式
-                kline_dict = {kline_fields[i]: last[i] for i in range(len(kline_fields))}
-                # kline_dict["amount"] = 0.0
+                kline_dict = {self.kline_fields[i]: last[i] for i in range(len(self.kline_fields))}
+                if not kline_dict.get("amount"):
+                    kline_dict["amount"] = 0.0
                 
                 await self.callback(KLINE,
                                     feed=self.id,

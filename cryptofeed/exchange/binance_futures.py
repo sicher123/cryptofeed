@@ -69,8 +69,8 @@ class BinanceFutures(Binance):
     async def _kline(self, msg: dict, timestamp: float):
         pair = msg.get("s")
         kline = msg.get("k")
-        
         is_finish = kline.get("x")
+
         if is_finish:
             update_timestamp = timestamp_normalize(self.id, kline.get("t"))
                 
@@ -81,7 +81,7 @@ class BinanceFutures(Binance):
                             "vol": kline.get("v"),
                             "amount": kline.get("q"),
                             "datetime": datetime.fromtimestamp(update_timestamp)}
-        
+
             await self.callback(KLINE,
                                 feed=self.id,
                                 pair=pair,

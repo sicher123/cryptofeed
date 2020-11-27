@@ -31,15 +31,16 @@ def main():
     pairs3 = OKEx.get_active_symbols()[:5]
     pair4 = ['XRP-USD-210326','LTC-USD-201225']
     pair5 = list(binance_pairs().keys())[:5]
-    pair6 = list(binance_futures_pairs().keys())[:5]
+    pair6 = list(binance_futures_pairs().values())[:5]
     pair7 = list(okcoin_pairs().keys())[:5]
     #print(pair6)
     # fh.add_feed(HuobiR(pairs=pairs0, channels=[KLINE], callbacks={KLINE: kline}))
     # fh.add_feed(HuobiDMR(pairs=pairs1, channels=[KLINE], callbacks={KLINE: kline}))
     # fh.add_feed(HuobiSwapR(pairs=pairs2, channels=[KLINE], callbacks={KLINE: kline}))
     # fh.add_feed(BinanceFutures(pairs=["BTCUSDT"], channels=[KLINE], callbacks={KLINE: kline}))
-    # fh.add_feed(BinanceFutures(pairs=pair6, channels=[KLINE], callbacks={KLINE: kline}))
-    fh.add_feed(OKCoin(pairs=pair7, channels=[KLINE], callbacks={KLINE: kline}))
+    print(pair6)
+    fh.add_feed(BinanceFutures(pairs=pair6, channels=[KLINE], callbacks={KLINE: kline}))
+    # fh.add_feed(OKCoin(pairs=pair7, channels=[KLINE], callbacks={KLINE: kline}))
     # fh.add_feed(OKEx(pairs=pairs3, channels=[KLINE], callbacks={KLINE: kline}))
     fh.run()
 
